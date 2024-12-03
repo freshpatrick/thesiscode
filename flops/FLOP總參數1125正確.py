@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Aug 11 17:30:11 2024
+Created on Mon Nov 25 22:10:50 2024
 
-@author: 2507
+@author: User
 """
-
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
 
@@ -73,15 +72,22 @@ import tensorflow as tf
 #x_bigdata=np.load(r'C:\Users\2507\Desktop\遠端資料\data\x_bigdata.npy')
 #y_bigdata=np.load(r'C:\Users\2507\Desktop\遠端資料\data\y_bigdata.npy')
 
+
 x_bigdata=np.load(r'D:\2021 4月開始的找回程式之旅\0409論文想做的題目\bigfinal_data\x_bigdata.npy')
 y_bigdata=np.load(r'D:\2021 4月開始的找回程式之旅\0409論文想做的題目\bigfinal_data\y_bigdata.npy')
+
+#y_bigdata位置標瑪test_indexs_new
+
 
 
 ##設定步驟##
 indexs=np.random.permutation(len(x_bigdata)) #隨機排序
+#indexs=np.arange(len(y_bigdata))
 train_indexs=indexs[:int(len(x_bigdata)*0.6)]
 val_indexs=indexs[int(len(x_bigdata)*0.6):int(len(x_bigdata)*0.8)]
 test_indexs=indexs[int(len(x_bigdata)*0.8):]
+#新的排序
+test_indexs_new=test_indexs+1
 
 #x部分
 x_bigdata_array=np.array(x_bigdata)
@@ -128,8 +134,8 @@ def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0):
     
     ##這邊做兩個分支
     #x  = layers.Conv1D(filters=4,kernel_size=1,padding='causal', dilation_rate=2,activation='relu')(x)
-    x_1 = layers.Conv1D(filters=4,kernel_size=1,padding='causal', dilation_rate=2,activation='tanh')(x)
-    x_2 = layers.Conv1D(filters=4,kernel_size=1,padding='causal', dilation_rate=4,activation='tanh')(x)
+    x_1 = layers.Conv1D(filters=4,kernel_size=1,padding='causal', dilation_rate=2,activation='relu')(x)
+    x_2 = layers.Conv1D(filters=4,kernel_size=1,padding='causal', dilation_rate=4,activation='relu')(x)
     #兩個分支結合
     x = layers.Concatenate()([x_1, x_2])
     
@@ -171,9 +177,9 @@ def build_model(
         #x = layers.Dense(dim, activation="elu")(x)
         
         #新增加
-        x = layers.Dense(5, activation="tanh")(x)
+        x = layers.Dense(10, activation="relu")(x)
         x = layers.Dropout(mlp_dropout)(x)
-        x = layers.Dense(5, activation="tanh")(x)
+        x = layers.Dense(10, activation="relu")(x)
         x = layers.Dropout(mlp_dropout)(x)
         x=x_encoder+x
         
@@ -188,7 +194,7 @@ def build_model(
     #x = layers.Dropout(mlp_dropout)(x)
     #新加入的casual 結束 
     
-    outputs = layers.Dense(1, activation="tanh")(x) #this is a pass-through
+    outputs = layers.Dense(1)(x) #this is a pass-through
     return keras.Model(inputs, outputs)
     
 
@@ -210,10 +216,10 @@ model = build_model(
     head_size=256, #256
     num_heads=4,  #4
     ff_dim=4,
-    num_transformer_blocks=9,  #IBM用2 validation會比較變動  4
+    num_transformer_blocks=2,  #IBM用2 validation會比較變動  4
     #mlp_units=[128],
-    mlp_units=range(0,3), #mlp_units=range(0,7),
-    mlp_dropout=0.4,
+    mlp_units=range(0,2), #mlp_units=range(0,7),
+    mlp_dropout=0.25,
     dropout=0.25,
 )
 
@@ -231,78 +237,19 @@ model.summary()
 
 
 
+def get_flops(model):
+  tf.compat.v1.disable_eager_execution()  #關閉eager狀態
+  sess = tf.compat.v1.Session()#自動轉換腳本
+
+  run_meta = tf.compat.v1.RunMetadata()
+  profiler = tf.compat.v1.profiler
+  #opts = tf.profiler.ProfileOptionBuilder.float_operation()
+  opts = tf.compat.v1.profiler.ProfileOptionBuilder.float_operation()
+  # We use the Keras session graph in the call to the profiler.
+  flops = profiler.profile(graph=sess.graph, 
+                           run_meta=run_meta, cmd='op', options=opts)
+
+  return flops.total_float_ops  # Prints the "flops" of the model
 
 
-
-#設定callback
-#model_dir = r'C:\Users\2507\Desktop\遠端資料\save_best'
-model_dir = r'D:/2021 4月開始的找回程式之旅/parameter/save_best'
-
-log_dir = os.path.join(r'D:/2021 4月開始的找回程式之旅/lab2-logs', 'model10')
-model_cbk = keras.callbacks.TensorBoard(log_dir=log_dir)
-# ModelCheckpoint回調函數幫忙儲存網路模型，可以設定只儲存最好的模型，「monitor」表示被監測的數據，「mode」min則代表監測數據越小越好。
-#將模型儲存在C:/Users/User/lab2-logs/models/
-model_mckp = keras.callbacks.ModelCheckpoint(model_dir + '/Best-model-1.h5', 
-                                        monitor='val_mean_absolute_error', 
-                                        save_best_only=True, 
-                                        mode='min')
-
-
-
-def scheduler(epoch, lr):
-    if epoch < 0:
-        return lr
-    else:
-        return lr * tf.exp(-0.1, name ='exp')
-
-
-
-history = model.fit(x_train, y_train,  # 傳入訓練數據
-               batch_size=32,  # 批次大小設為64
-               epochs=30,  # 整個dataset訓練100遍
-               validation_data=(x_val, y_val),  # 驗證數據
-               callbacks=[model_cbk, model_mckp,keras.callbacks.LearningRateScheduler(scheduler)])
-               #callbacks = [
-                   #keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True),
-                   #keras.callbacks.LearningRateScheduler(scheduler)
-                   #]
-               #)  # Tensorboard回調函數紀錄訓練過程，ModelCheckpoint回調函數儲存最好的模型
-               
-
-##預測結果
-#訓練結果
-history.history.keys()  # 查看history儲存的資訊有哪些
-
-#在model.compile已經將損失函數設為均方誤差(Mean Square Error)
-#所以history紀錄的loss和val_loss為Mean Squraed Error損失函數計算的損失值
-plt.plot(history.history['loss'], label='train')
-plt.plot(history.history['val_loss'], label='validation')
-#plt.ylim(0.003, 0.006)
-plt.title('loss function')
-plt.ylabel('loss')
-plt.xlabel('epochs')
-plt.legend(loc='upper right')
-##MAE評估指標
-plt.plot(history.history['mean_absolute_error'], label='train')
-plt.plot(history.history['val_mean_absolute_error'], label='validation')
-plt.title('mae')
-plt.ylabel('mae')
-plt.xlabel('epochs')
-plt.legend(loc='upper right')
-#plt.savefig(path+'loss.png')
-#清空圖片
-#plt.cla()
-
-
-
-# 預測測試數據
-y_pred = model.predict(x_test)
-# 顯示誤差到小數點第二位 #0.05
-#epooch20次0.04297471135761948
-y_pred = y_scaler.inverse_transform(y_pred)
-meanmae_error=np.mean(abs(y_pred- np.array(y_test_orign)))
-print(" 平均mae誤差: {:.2f}".format(meanmae_error))
-#寫入txt檔
-#pathtxt =path+ 'output.txt'
-#f = open(pathtxt,'w')
-#print(" 平均mae誤差:"+str(round(meanmae_error,2)), file=f)
+get_flops(model)  #1455234115

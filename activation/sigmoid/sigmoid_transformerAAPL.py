@@ -25,7 +25,7 @@ from sklearn.metrics import mean_absolute_error
 
 
 # Load  dataset
-df = yf.download("IBM.", start="1980-01-01", end="2024-07-31")
+df = yf.download("AAPL", start="1980-01-01", end="2024-07-31")
 data = df[['Close']].values
 scaler = MinMaxScaler(feature_range=(0, 1))
 data_scaled = scaler.fit_transform(data)
@@ -73,8 +73,8 @@ def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0):
     #Normalization
     x = layers.LayerNormalization(epsilon=1e-6)(res)
     #Branch
-    x_1 = layers.Conv1D(filters=4,kernel_size=2,padding='causal', dilation_rate=2,activation='tanh')(x)
-    x_2 = layers.Conv1D(filters=4,kernel_size=2,padding='causal', dilation_rate=4,activation='tanh')(x)
+    x_1 = layers.Conv1D(filters=4,kernel_size=2,padding='causal', dilation_rate=2,activation='sigmoid')(x)
+    x_2 = layers.Conv1D(filters=4,kernel_size=2,padding='causal', dilation_rate=4,activation='sigmoid')(x)
     x = layers.Concatenate()([x_1, x_2])
        
     x = layers.Dropout(dropout)(x)
@@ -98,7 +98,7 @@ def build_model(
     inputs = keras.Input(shape=input_shape)
     x = inputs
     
-    for _ in range(num_transformer_encoderblocks):  # This is what stacks our transformer blocks
+    for _ in range(num_transformer_encoderblocks):  
         x = transformer_encoder(x, head_size, num_heads, ff_dim, dropout)
 
     x = layers.GlobalAveragePooling1D(data_format="channels_first")(x) 
@@ -106,9 +106,9 @@ def build_model(
     #decoder
     for dim in num_transformer_decoderblocks:
         x_encoder=x
-        x = layers.Dense(10, activation="tanh")(x)
+        x = layers.Dense(10, activation="sigmoid")(x)
         x = layers.Dropout(mlp_dropout)(x)
-        x = layers.Dense(10, activation="tanh")(x)
+        x = layers.Dense(10, activation="sigmoid")(x)
         x = layers.Dropout(mlp_dropout)(x)
         x=x_encoder+x
     x=layers.Concatenate()([x_encoder1, x])
@@ -130,8 +130,8 @@ model = build_model(
     head_size=64,
     num_heads=2,  
     ff_dim=4,
-    num_transformer_encoderblocks=8, 
-    num_transformer_decoderblocks=range(0,4), 
+    num_transformer_encoderblocks=4, 
+    num_transformer_decoderblocks=range(0,5), 
     mlp_dropout=0.25,
     dropout=0.25,
 )

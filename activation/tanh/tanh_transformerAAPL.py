@@ -25,7 +25,7 @@ from sklearn.metrics import mean_absolute_error
 
 
 # Load  dataset
-df = yf.download("IBM.", start="1980-01-01", end="2024-07-31")
+df = yf.download("AAPL", start="1980-01-01", end="2024-07-31")
 data = df[['Close']].values
 scaler = MinMaxScaler(feature_range=(0, 1))
 data_scaled = scaler.fit_transform(data)
@@ -130,8 +130,8 @@ model = build_model(
     head_size=64,
     num_heads=2,  
     ff_dim=4,
-    num_transformer_encoderblocks=8, 
-    num_transformer_decoderblocks=range(0,4), 
+    num_transformer_encoderblocks=4, 
+    num_transformer_decoderblocks=range(0,5), 
     mlp_dropout=0.25,
     dropout=0.25,
 )

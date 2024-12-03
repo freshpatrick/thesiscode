@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Aug 10 21:20:19 2024
+Created on Tue Nov 26 23:45:42 2024
 
-@author: 2507
+@author: User
 """
-
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
@@ -25,7 +24,7 @@ from sklearn.metrics import mean_absolute_error
 
 
 # Load  dataset
-df = yf.download("IBM.", start="1980-01-01", end="2024-07-31")
+df = yf.download("MSFT", start="1980-01-01", end="2024-07-31")
 data = df[['Close']].values
 scaler = MinMaxScaler(feature_range=(0, 1))
 data_scaled = scaler.fit_transform(data)
@@ -73,8 +72,8 @@ def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0):
     #Normalization
     x = layers.LayerNormalization(epsilon=1e-6)(res)
     #Branch
-    x_1 = layers.Conv1D(filters=4,kernel_size=2,padding='causal', dilation_rate=2,activation='tanh')(x)
-    x_2 = layers.Conv1D(filters=4,kernel_size=2,padding='causal', dilation_rate=4,activation='tanh')(x)
+    x_1 = layers.Conv1D(filters=4,kernel_size=2,padding='causal', dilation_rate=2,activation='relu')(x)
+    x_2 = layers.Conv1D(filters=4,kernel_size=2,padding='causal', dilation_rate=4,activation='relu')(x)
     x = layers.Concatenate()([x_1, x_2])
        
     x = layers.Dropout(dropout)(x)
@@ -106,9 +105,9 @@ def build_model(
     #decoder
     for dim in num_transformer_decoderblocks:
         x_encoder=x
-        x = layers.Dense(10, activation="tanh")(x)
+        x = layers.Dense(10, activation="relu")(x)
         x = layers.Dropout(mlp_dropout)(x)
-        x = layers.Dense(10, activation="tanh")(x)
+        x = layers.Dense(10, activation="relu")(x)
         x = layers.Dropout(mlp_dropout)(x)
         x=x_encoder+x
     x=layers.Concatenate()([x_encoder1, x])
@@ -130,8 +129,8 @@ model = build_model(
     head_size=64,
     num_heads=2,  
     ff_dim=4,
-    num_transformer_encoderblocks=8, 
-    num_transformer_decoderblocks=range(0,4), 
+    num_transformer_encoderblocks=6, 
+    num_transformer_decoderblocks=range(0,3), 
     mlp_dropout=0.25,
     dropout=0.25,
 )
@@ -145,48 +144,19 @@ model.compile(keras.optimizers.Adam(0.001),
 model.summary()
 
 
-#設定callback
-model_dir = r'C:\Users\2507\Desktop\遠端資料\save_best'
+def get_flops(model):
+  tf.compat.v1.disable_eager_execution()  #關閉eager狀態
+  sess = tf.compat.v1.Session()#自動轉換腳本
 
-log_dir = os.path.join(r'D:/2021 4月開始的找回程式之旅/lab2-logs', 'model10')
-model_cbk = keras.callbacks.TensorBoard(log_dir=log_dir)
-model_mckp = keras.callbacks.ModelCheckpoint(model_dir + '/Best-model-1.h5', 
-                                        monitor='val_mean_absolute_error', 
-                                        save_best_only=True, 
-                                        mode='min')
+  run_meta = tf.compat.v1.RunMetadata()
+  profiler = tf.compat.v1.profiler
+  #opts = tf.profiler.ProfileOptionBuilder.float_operation()
+  opts = tf.compat.v1.profiler.ProfileOptionBuilder.float_operation()
+  # We use the Keras session graph in the call to the profiler.
+  flops = profiler.profile(graph=sess.graph, 
+                           run_meta=run_meta, cmd='op', options=opts)
 
-
-
-def scheduler(epoch, lr):
-    if epoch < 0:
-        return lr
-    else:
-        return lr * tf.exp(-0.1, name ='exp')
+  return flops.total_float_ops  # Prints the "flops" of the model
 
 
-history = model.fit(X_train, y_train, 
-               batch_size=32,
-               epochs=30, 
-               validation_data=(X_val, y_val),  
-               callbacks=[model_cbk, model_mckp,keras.callbacks.LearningRateScheduler(scheduler)])
-
-
-# Make predictions
-train_predict = model.predict(X_train)
-val_predict = model.predict(X_val)
-test_predict = model.predict(X_test)
-
-# Inverse transform predictions
-train_predict = scaler.inverse_transform(train_predict)
-val_predict = scaler.inverse_transform(val_predict)
-test_predict = scaler.inverse_transform(test_predict)
-
-
-y_testorign=scaler.inverse_transform(data_scaled)[(validat_size+time_step+1):len(data_scaled),:]
-meanmae_error=np.mean(abs(test_predict- np.array(y_testorign)))
-test_rmse = math.sqrt(mean_squared_error(test_predict, np.array(y_testorign)))
-print(" 平均mae誤差: {:.2f}".format(meanmae_error)) 
-print(" RMSE誤差: {:.2f}".format(test_rmse))  
-
-
-
+get_flops(model)  #1455234115

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Aug 10 21:20:19 2024
+Created on Sun Aug 11 17:30:11 2024
 
 @author: 2507
 """
@@ -23,44 +23,41 @@ from keras_self_attention import SeqSelfAttention
 from tensorflow.python.framework import ops
 from sklearn.metrics import mean_absolute_error
 
-
-# Load  dataset
-df = yf.download("IBM.", start="1980-01-01", end="2024-07-31")
-data = df[['Close']].values
-scaler = MinMaxScaler(feature_range=(0, 1))
-data_scaled = scaler.fit_transform(data)
+#load data
+x_bigdata=np.load(r'C:\Users\2507\Desktop\遠端資料\data\x_bigdata.npy')
+y_bigdata=np.load(r'C:\Users\2507\Desktop\遠端資料\data\y_bigdata.npy')
 
 
-def create_dataset(dataset, time_step=100):
-    dataX, dataY = [], []
-    for i in range(len(dataset) - time_step - 1):
-        a = dataset[i:(i + time_step), 0]
-        dataX.append(a)
-        dataY.append(dataset[i + time_step, 0])
-    return np.array(dataX), np.array(dataY)
+##設定步驟##
+indexs=np.random.permutation(len(x_bigdata)) #隨機排序
+train_indexs=indexs[:int(len(x_bigdata)*0.6)]
+val_indexs=indexs[int(len(x_bigdata)*0.6):int(len(x_bigdata)*0.8)]
+test_indexs=indexs[int(len(x_bigdata)*0.8):]
+
+#x部分
+x_bigdata_array=np.array(x_bigdata)
+x_train=x_bigdata_array[train_indexs]
+x_val=x_bigdata_array[val_indexs]
+x_test=x_bigdata_array[test_indexs]
+
+#y部分
+y_scaler = MinMaxScaler(feature_range = (0, 1))
+y_bigdata_array=np.array(y_bigdata)
+y_train=y_bigdata_array[train_indexs]
+#新
+y_train=y_scaler.fit_transform(pd.DataFrame(y_train))
+y_val=y_bigdata_array[val_indexs]
+#新
+y_val=y_scaler.fit_transform(pd.DataFrame(y_val))
+y_test=y_bigdata_array[test_indexs]
+#新
+y_test_orign=y_test
+y_test=y_scaler.fit_transform(pd.DataFrame(y_test))
 
 
-# Parameters
-time_step = 10
-training_size = int(len(data_scaled) * 0.6)
-validat_size=int(len(data_scaled) * 0.8)
-test_size = len(data_scaled) - validat_size
-train_data,val_data,test_data = data_scaled[0:training_size,:], data_scaled[training_size:validat_size,:], data_scaled[validat_size:len(data_scaled),:]
-
-
-
-X_train, y_train = create_dataset(train_data, time_step)
-X_val, y_val = create_dataset(val_data, time_step)
-X_test, y_test = create_dataset(test_data, time_step)
-
-
-# Reshape input for the model
-X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 1)
-X_val = X_val.reshape(X_val.shape[0], X_val.shape[1], 1)
-X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], 1)
-
-
+##開始建構transformer模型
 def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0):
+    
     # Normalization and Attention
     x = layers.LayerNormalization(epsilon=1e-6)(inputs)
     
@@ -69,14 +66,14 @@ def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0):
         key_dim=head_size, num_heads=num_heads, dropout=dropout
     )(x, x)
     x = layers.Dropout(dropout)(x)
-    res = x + inputs 
-    #Normalization
+    res = x + inputs
+    
+    # Normalization    
     x = layers.LayerNormalization(epsilon=1e-6)(res)
     #Branch
-    x_1 = layers.Conv1D(filters=4,kernel_size=2,padding='causal', dilation_rate=2,activation='tanh')(x)
-    x_2 = layers.Conv1D(filters=4,kernel_size=2,padding='causal', dilation_rate=4,activation='tanh')(x)
+    x_1 = layers.Conv1D(filters=4,kernel_size=2,padding='causal', dilation_rate=2,activation='relu')(x)
+    x_2 = layers.Conv1D(filters=4,kernel_size=2,padding='causal', dilation_rate=4,activation='relu')(x)
     x = layers.Concatenate()([x_1, x_2])
-       
     x = layers.Dropout(dropout)(x)
     x = layers.Conv1D(filters=inputs.shape[-1], kernel_size=2,padding='same')(x)
     return x + res
@@ -106,9 +103,9 @@ def build_model(
     #decoder
     for dim in num_transformer_decoderblocks:
         x_encoder=x
-        x = layers.Dense(10, activation="tanh")(x)
-        x = layers.Dropout(mlp_dropout)(x)
-        x = layers.Dense(10, activation="tanh")(x)
+        x = layers.Dense(10, activation="relu")(x)
+        #x = layers.Dropout(mlp_dropout)(x)
+        x = layers.Dense(10, activation="relu")(x)
         x = layers.Dropout(mlp_dropout)(x)
         x=x_encoder+x
     x=layers.Concatenate()([x_encoder1, x])
@@ -118,7 +115,7 @@ def build_model(
 
 
 #Set hyperparameters
-input_shape = X_train.shape[1:]
+input_shape = x_train.shape[1:]
 print(input_shape)
 epoch_number=30
 batch_size=64
@@ -130,8 +127,8 @@ model = build_model(
     head_size=64,
     num_heads=2,  
     ff_dim=4,
-    num_transformer_encoderblocks=8, 
-    num_transformer_decoderblocks=range(0,4), 
+    num_transformer_encoderblocks=1, 
+    num_transformer_decoderblocks=range(0,1), 
     mlp_dropout=0.25,
     dropout=0.25,
 )
@@ -164,29 +161,19 @@ def scheduler(epoch, lr):
         return lr * tf.exp(-0.1, name ='exp')
 
 
-history = model.fit(X_train, y_train, 
-               batch_size=32,
-               epochs=30, 
-               validation_data=(X_val, y_val),  
+
+history = model.fit(x_train, y_train,  # 傳入訓練數據
+               batch_size=32,  # 批次大小設為64
+               epochs=30,  # 整個dataset訓練100遍
+               validation_data=(x_val, y_val),  # 驗證數據
                callbacks=[model_cbk, model_mckp,keras.callbacks.LearningRateScheduler(scheduler)])
 
 
-# Make predictions
-train_predict = model.predict(X_train)
-val_predict = model.predict(X_val)
-test_predict = model.predict(X_test)
-
-# Inverse transform predictions
-train_predict = scaler.inverse_transform(train_predict)
-val_predict = scaler.inverse_transform(val_predict)
-test_predict = scaler.inverse_transform(test_predict)
-
-
-y_testorign=scaler.inverse_transform(data_scaled)[(validat_size+time_step+1):len(data_scaled),:]
-meanmae_error=np.mean(abs(test_predict- np.array(y_testorign)))
-test_rmse = math.sqrt(mean_squared_error(test_predict, np.array(y_testorign)))
-print(" 平均mae誤差: {:.2f}".format(meanmae_error)) 
-print(" RMSE誤差: {:.2f}".format(test_rmse))  
+history.history.keys() 
 
 
 
+y_pred = model.predict(x_test)
+y_pred = y_scaler.inverse_transform(y_pred)
+meanmae_error=np.mean(abs(y_pred- np.array(y_test_orign)))
+print(" 平均mae誤差: {:.2f}".format(meanmae_error))

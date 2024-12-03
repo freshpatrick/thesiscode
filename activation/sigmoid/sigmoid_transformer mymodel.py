@@ -7,7 +7,6 @@ Created on Sun Aug 11 17:30:11 2024
 
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
-
 import numpy as np
 import requests
 import json

@@ -25,7 +25,7 @@ from sklearn.metrics import mean_absolute_error
 
 
 # Load  dataset
-df = yf.download("IBM.", start="1980-01-01", end="2024-07-31")
+df = yf.download("MSFT.", start="1980-01-01", end="2024-07-31")
 data = df[['Close']].values
 scaler = MinMaxScaler(feature_range=(0, 1))
 data_scaled = scaler.fit_transform(data)
@@ -106,9 +106,9 @@ def build_model(
     #decoder
     for dim in num_transformer_decoderblocks:
         x_encoder=x
-        x = layers.Dense(10, activation="tanh")(x)
+        x = layers.Dense(5, activation="tanh")(x)
         x = layers.Dropout(mlp_dropout)(x)
-        x = layers.Dense(10, activation="tanh")(x)
+        x = layers.Dense(5, activation="tanh")(x)
         x = layers.Dropout(mlp_dropout)(x)
         x=x_encoder+x
     x=layers.Concatenate()([x_encoder1, x])
@@ -130,8 +130,8 @@ model = build_model(
     head_size=64,
     num_heads=2,  
     ff_dim=4,
-    num_transformer_encoderblocks=8, 
-    num_transformer_decoderblocks=range(0,4), 
+    num_transformer_encoderblocks=6, 
+    num_transformer_decoderblocks=range(0,3), 
     mlp_dropout=0.25,
     dropout=0.25,
 )
