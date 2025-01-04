@@ -1,4 +1,4 @@
-# Paper name
+# Stock Prediction via Deep Attention and Transformer Based Neural Network Combining Mixed Frequency Financial Data and Monthly Revenue
 
 # Operation manual
 First,the data set is placed in the data folder,We provide daily stock price data of four stocks of APPL MSFT TSA IBM from 
