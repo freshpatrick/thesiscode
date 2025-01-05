@@ -1,0 +1,7 @@
+去搞懂LSTM GRU SVM RANDOMFOREST  ARIMA
+
+
+比較最多人使用的股票資料庫和方法
+
+
+AAPL dropout 25% loss picture 

@@ -1,0 +1,8 @@
+      encoder   decoder  MAE
+AAPL:   5         7      27.78
+IBM :   8         2      4.61
+TSLA:   6         7      31.27
+MSFT    4         2      34.13  
+StockQM 8         6       28.52   
+
+

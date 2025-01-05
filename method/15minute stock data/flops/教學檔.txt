@@ -1,0 +1,37 @@
+https://stackoverflow.com/questions/59460310/flops-in-tensor-flow-convolution-layer
+
+
+第二個比較有用
+https://github.com/tensorflow/tensorflow/issues/32809
+
+I had to tweak it to avoid errors with TF 2.0, but I am still not able to get it working.
+
+model = tf.keras.models.Sequential([
+      InputLayer((32, 32, 1)),
+      Conv2D(8, 5, padding='same', activation='relu'),
+      MaxPool2D(2),
+      Conv2D(16, 5, padding='same', activation='relu'),
+      MaxPool2D(2),
+      Flatten(),
+      Dense(128, activation='relu'),
+      Dense(64, activation='relu'),
+      Dense(10, activation='softmax')
+  ])
+
+def get_flops(model):
+  tf.compat.v1.disable_eager_execution()
+  sess = tf.compat.v1.Session()
+
+  run_meta = tf.compat.v1.RunMetadata()
+  profiler = tf.compat.v1.profiler
+  opts = profiler.ProfileOptionBuilder.float_operation()
+  # We use the Keras session graph in the call to the profiler.
+  flops = profiler.profile(graph=sess.graph, 
+                           run_meta=run_meta, cmd='op', options=opts)
+
+  return flops.total_float_ops  # Prints the "flops" of the model
+
+
+
+3.
+https://discuss.ai.google.dev/t/why-i-can-count-flops-of-a-model-without-declare-which-model-to-be-counted/28655

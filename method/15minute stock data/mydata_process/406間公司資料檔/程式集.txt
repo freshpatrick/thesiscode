@@ -1,0 +1,63 @@
+from dateutil.relativedelta import relativedelta
+from datetime import datetime
+
+import numpy as np
+import requests
+import json
+import time
+import csv
+import pandas as pd
+from pandas import ExcelWriter
+import xlsxwriter
+from pandas_datareader import data as pdr
+import yfinance as yf
+#重要要引進RemoteDataError才能跑
+from pandas_datareader._utils import RemoteDataError
+from numpy import median#要引入這個才能跑中位數
+from dateutil.relativedelta import relativedelta
+from datetime import datetime
+
+from pandas import ExcelWriter
+import xlsxwriter
+from pandas_datareader import data as pdr
+#重要要引進RemoteDataError才能跑
+from pandas_datareader._utils import RemoteDataError
+from numpy import median#要引入這個才能跑中位數
+
+############################跑lstm
+import keras
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers import LSTM
+from keras.layers import Dropout
+from sklearn.preprocessing import MinMaxScaler
+scaler = MinMaxScaler()
+
+###########神經元層
+from tensorflow import keras
+from tensorflow.keras import layers
+from keras_self_attention import SeqSelfAttention
+
+# Adding the LSTM layer
+import keras
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers import LSTM
+from keras.layers import Dropout
+import matplotlib.pyplot as plt
+import keras
+from keras_self_attention import SeqSelfAttention
+import matplotlib.pyplot as plt
+import tqdm #使用進度條
+import tensorflow as tf
+from random import sample
+import os
+##############################0506從這開始跑##############################################
+#final_data_real=pd.read_csv(r'C:\Users\2507\Desktop\遠端資料/0427擴充資料集bigfinal_data__0到405最後修正.csv', encoding='utf_8_sig')
+
+#k原本只做到3月份
+#final_data_real=pd.read_csv(r'D:/2021 4月開始的找回程式之旅/0409論文想做的題目/bigfinal_data/0427擴充資料集bigfinal_data__0到405最後修正.csv', encoding='utf_8_sig')
+
+#做到4月份
+final_data_real=pd.read_csv(r'D:/2021 4月開始的找回程式之旅/0409論文想做的題目/bigfinal_data/0601擴充資料集bigfinal_data__0到405最終.csv', encoding='utf_8_sig')
+
