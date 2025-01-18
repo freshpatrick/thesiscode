@@ -21,10 +21,40 @@ from keras.layers import Conv1D , MaxPool2D , Flatten , Dropout,Conv2D
 import csv
 
 
-AAPL= yf.download("AAPL", start="1980-01-01", end="2024-07-31")
-TSLA= yf.download("TSLA", start="1980-01-01", end="2024-07-31")
-MSFT= yf.download("MSFT", start="1980-01-01", end="2024-07-31")
-IBM = yf.download("IBM ", start="1980-01-01", end="2024-07-31")
+#載入資料
+AAPL=pd.read_csv( r'C:\Users\2507\Desktop\遠端資料\data\15mindata\AAPL\AAPL15min.csv')  
+AAPL=AAPL.iloc[:,2:]
+vol=AAPL['volume']
+close=AAPL['close']
+#volume和close欄位對調
+AAPL['close']=vol
+AAPL['volume']=close
+AAPL.columns=['open', 'high', 'low', 'volume', 'close']
+TSLA=pd.read_csv( r'C:\Users\2507\Desktop\遠端資料\data\15mindata\TSLA\TSLA15min.csv')  
+TSLA=TSLA.iloc[:,2:]
+vol=TSLA['volume']
+close=TSLA['close']
+#volume和close欄位對調
+TSLA['close']=vol
+TSLA['volume']=close
+TSLA.columns=['open', 'high', 'low', 'volume', 'close']
+MSFT=pd.read_csv( r'C:\Users\2507\Desktop\遠端資料\data\15mindata\MSFT\MSFT15min.csv')  
+MSFT=MSFT.iloc[:,2:]
+vol=MSFT['volume']
+close=MSFT['close']
+#volume和close欄位對調
+MSFT['close']=vol
+MSFT['volume']=close
+MSFT.columns=['open', 'high', 'low', 'volume', 'close']
+IBM=pd.read_csv( r'C:\Users\2507\Desktop\遠端資料\data\15mindata\IBM\IBM15min.csv')  
+IBM=IBM.iloc[:,2:]
+vol=IBM['volume']
+close=IBM['close']
+#volume和close欄位對調
+IBM['close']=vol
+IBM['volume']=close
+IBM.columns=['open', 'high', 'low', 'volume', 'close']
+#結束
 
 
 final_data_real=[]
@@ -57,14 +87,15 @@ for k in range(0,4):  #len(stock_id)  5
     print("第"+str(k)+"支股票")
     tsla_data =final_data_real[k]
     tsla_data.columns
-    tsla_close = tsla_data['Close'].values
-    tsla_data=tsla_data.drop('Adj Close', axis=1)
+    #tsla_data.set_index(['Date'], inplace=True)
+    tsla_close = tsla_data['close'].values
+    #tsla_data=tsla_data.drop('Adj Close', axis=1)
     n = 10
     train =tsla_data[:int(len(tsla_data) *0.6)]
-    val =tsla_data[:int(len(tsla_data) *0.8)]
+    val =tsla_data[int(len(tsla_data) *0.6):int(len(tsla_data) *0.8)]
     test =tsla_data[int(len(tsla_data) *0.8):]
-    y_testc=test['Close'][n:]
-    feature_names = list(train.drop('Close', axis=1).columns)
+    y_testc=test['close'][n:]
+    feature_names = list(train.drop('close', axis=1).columns)
     x_train = []
     y_train = []
     train_indexes = []
@@ -73,7 +104,7 @@ for k in range(0,4):  #len(stock_id)  5
         x_trainadd=norm_data_xtrain.iloc[i:i+n]. values
         x_trainaddscalar=x_scaler.fit_transform(x_trainadd)
         x_train.append(np.transpose(x_trainaddscalar))  
-        y_train.append(train['Close'].iloc[i+n]) 
+        y_train.append(train['close'].iloc[i+n]) 
         train_indexes.append(train.index[i+n]) 
     print(x_train[0])
     
@@ -91,7 +122,7 @@ for k in range(0,4):  #len(stock_id)  5
         x_valadd=norm_data_xval.iloc[i:i+n]. values
         x_valaddscalar=x_scaler.fit_transform(x_valadd)
         x_val.append(np.transpose(x_valaddscalar))  
-        y_val.append(val['Close'].iloc[i+n]) 
+        y_val.append(val['close'].iloc[i+n]) 
         val_indexes.append(val.index[i+n]) 
     print(x_val[0])
     
@@ -110,7 +141,7 @@ for k in range(0,4):  #len(stock_id)  5
         x_testadd=norm_data_xtest.iloc[i:i+n]. values
         x_testaddscalar=x_scaler.fit_transform(x_testadd)
         x_test.append(np.transpose(x_testaddscalar)) 
-        y_test.append(test['Close'].iloc[i+n]) 
+        y_test.append(test['close'].iloc[i+n]) 
         test_indexes.append(test.index[i+n]) 
 
     x_test1=x_test
@@ -148,7 +179,7 @@ for k in range(0,4):  #len(stock_id)  5
 
     history = model.fit(x_train, y_train,  
                batch_size=32,  
-               epochs=30,  
+               epochs=2,  
                validation_data=(x_val, y_val), 
                callbacks=[model_cbk, model_mckp])  
 
@@ -163,5 +194,4 @@ for k in range(0,4):  #len(stock_id)  5
 
 #output
 big_lstm_data=pd.concat([pd.DataFrame(stock),pd.DataFrame(stock_mae)], axis=1)
-big_lstm_data.to_csv(r'D:/2021 4月開始的找回程式之旅/0409論文想做的題目/0506比較方法/五個股票/MINMAXSCALAR 3060five_outputdata_lstm.csv', encoding='utf_8_sig')
-
+big_lstm_data.to_csv(r'D:/pytorch範例/transformer_tensorflow/1002transformer/15minute/comparemodel/fourcompany.csv')

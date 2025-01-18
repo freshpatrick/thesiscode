@@ -26,23 +26,40 @@ from sklearn.metrics import mean_absolute_error
 
 
 # Load  dataset
-df = yf.download("MSFT", start="1980-01-01", end="2024-07-31")
-data = df[['Close']].values
-scaler = MinMaxScaler(feature_range=(0, 1))
-data_scaled = scaler.fit_transform(data)
+output_directory = r'C:\Users\2507\Desktop\遠端資料\data\15mindata\AAPL'
+output_path = os.path.join(output_directory, "AAPL15min.csv")   
+df=pd.read_csv(output_path)  
+data=df.iloc[:,2:]
 
+vol=data['volume']
+close=data['close']
+#volume和close欄位對調
+data['close']=vol
+data['volume']=close
+data.columns=['open', 'high', 'low', 'volume', 'close']
+
+
+x_scaler = MinMaxScaler(feature_range=(0, 1))
+y_scaler = MinMaxScaler(feature_range=(0, 1))
+
+
+x_data_scaled = x_scaler.fit_transform(data.iloc[:,0:5])  
+y_data_scaled = y_scaler.fit_transform(np.array(data)[:,4:5])  
+data_scaled = pd.concat([pd.DataFrame(x_data_scaled),pd.DataFrame(y_data_scaled)],axis=1)
+data_scaled=np.array(data_scaled)
 
 def create_dataset(dataset, time_step=100):
     dataX, dataY = [], []
     for i in range(len(dataset) - time_step - 1):
-        a = dataset[i:(i + time_step), 0]
+        a = dataset[i:(i + time_step), :5]  
         dataX.append(a)
-        dataY.append(dataset[i + time_step, 0])
+        dataY.append(dataset[i + time_step, 4]) 
     return np.array(dataX), np.array(dataY)
 
 
+
 # Parameters
-time_step = 10
+time_step = 50
 training_size = int(len(data_scaled) * 0.6)
 validat_size=int(len(data_scaled) * 0.8)
 test_size = len(data_scaled) - validat_size
@@ -53,13 +70,6 @@ train_data,val_data,test_data = data_scaled[0:training_size,:], data_scaled[trai
 X_train, y_train = create_dataset(train_data, time_step)
 X_val, y_val = create_dataset(val_data, time_step)
 X_test, y_test = create_dataset(test_data, time_step)
-
-
-# Reshape input for the model
-X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 1)
-X_val = X_val.reshape(X_val.shape[0], X_val.shape[1], 1)
-X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], 1)
-
 
 
 
@@ -141,8 +151,8 @@ model = build_model(
     head_size=64, #256
     num_heads=2,  #4
     ff_dim=4,
-    num_transformer_encoderblocks=6,  #IBM用2 validation會比較變動  4
-    num_transformer_decoderblocks=range(0,2), #mlp_units=range(0,5),
+    num_transformer_encoderblocks=2,  
+    num_transformer_decoderblocks=range(0,1),
     mlp_dropout=0.25,
     dropout=0.25)
         
@@ -168,14 +178,27 @@ history = model.fit(X_train, y_train,
                     callbacks=[model_cbk, model_mckp,keras.callbacks.LearningRateScheduler(scheduler)])
 
 
+# Make predictions
 train_predict = model.predict(X_train)
 val_predict = model.predict(X_val)
 test_predict = model.predict(X_test)
-train_predict = scaler.inverse_transform(train_predict)
-val_predict = scaler.inverse_transform(val_predict)
-test_predict = scaler.inverse_transform(test_predict)
-y_testorign=scaler.inverse_transform(data_scaled)[(validat_size+time_step+1):len(data_scaled),:]
+# Inverse transform predictions
+train_predict = y_scaler.inverse_transform(train_predict)
+val_predict = y_scaler.inverse_transform(val_predict)
+test_predict = y_scaler.inverse_transform(test_predict)
+
+
+#output
+y_testorign=y_scaler.inverse_transform(data_scaled[:,4:5])[(validat_size+time_step+1):len(data_scaled),:]
 meanmae_error=np.mean(abs(test_predict- np.array(y_testorign)))
 test_rmse = math.sqrt(mean_squared_error(test_predict, np.array(y_testorign)))
-print(" 平均mae誤差: {:.2f}".format(meanmae_error))  #12.73
-print(" RMSE誤差: {:.2f}".format(test_rmse))  #13.18
+print(" 平均mae誤差: {:.2f}".format(meanmae_error)) 
+print(" RMSE誤差: {:.2f}".format(test_rmse))  
+
+
+#plot loss
+plt.plot(history.history['loss'], label='train')
+plt.plot(history.history['val_loss'], label='validation')
+plt.title('loss function')
+plt.ylabel('loss')
+plt.xlabel('epochs')
