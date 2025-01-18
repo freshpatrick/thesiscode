@@ -92,7 +92,7 @@ for k in range(0,4):  #len(stock_id)  5
     #tsla_data=tsla_data.drop('Adj Close', axis=1)
     n = 10
     train =tsla_data[:int(len(tsla_data) *0.6)]
-    val =tsla_data[:int(len(tsla_data) *0.8)]
+    val =tsla_data[int(len(tsla_data) *0.6):int(len(tsla_data) *0.8)]
     test =tsla_data[int(len(tsla_data) *0.8):]
     y_testc=test['close'][n:]
     feature_names = list(train.drop('close', axis=1).columns)
@@ -179,7 +179,7 @@ for k in range(0,4):  #len(stock_id)  5
 
     history = model.fit(x_train, y_train,  
                batch_size=32,  
-               epochs=30,  
+               epochs=2,  
                validation_data=(x_val, y_val), 
                callbacks=[model_cbk, model_mckp])  
 
@@ -194,5 +194,4 @@ for k in range(0,4):  #len(stock_id)  5
 
 #output
 big_lstm_data=pd.concat([pd.DataFrame(stock),pd.DataFrame(stock_mae)], axis=1)
-big_lstm_data.to_csv(r'D:/2021 4月開始的找回程式之旅/0409論文想做的題目/0506比較方法/五個股票/MINMAXSCALAR 3060five_outputdata_lstm.csv', encoding='utf_8_sig')
-
+big_lstm_data.to_csv(r'D:/pytorch範例/transformer_tensorflow/1002transformer/15minute/comparemodel/fourcompany.csv')

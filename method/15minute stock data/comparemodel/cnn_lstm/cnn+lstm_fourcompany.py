@@ -50,12 +50,6 @@ from keras.layers import Conv1D , MaxPool2D , Flatten , Dropout
 
 
 
-#four company
-#AAPL= yf.download("AAPL", start="1980-01-01", end="2024-07-31")
-#TSLA= yf.download("TSLA", start="1980-01-01", end="2024-07-31")
-#MSFT= yf.download("MSFT", start="1980-01-01", end="2024-07-31")
-#IBM = yf.download("IBM ", start="1980-01-01", end="2024-07-31")
-
 #載入資料
 AAPL=pd.read_csv( r'C:\Users\2507\Desktop\遠端資料\data\15mindata\AAPL\AAPL15min.csv')  
 AAPL=AAPL.iloc[:,2:]
@@ -91,8 +85,6 @@ IBM['volume']=close
 IBM.columns=['open', 'high', 'low', 'volume', 'close']
 
 
-#結束
-
 
 
 final_data_real=[]
@@ -123,15 +115,16 @@ for k in range(0,len(stock_id)):
     #train 60% val 20% test 20%   
     n = 50
     train =tsla_data[:int(len(tsla_data) *0.6)]
-    val =tsla_data[:int(len(tsla_data) *0.8)]
+    val =tsla_data[int(len(tsla_data) *0.6):int(len(tsla_data) *0.8)]
     test =tsla_data[int(len(tsla_data) *0.8):]
     y_testc=test['close'][n:]
-    feature_names = list(train.drop('close', axis=1).columns)
+    #feature_names = list(train.drop('close', axis=1).columns)
+    feature_names = list(train.columns)
     x_train = []
     y_train = []
     train_indexes = []
     norm_data_xtrain = train[feature_names]
-    for i in tqdm.tqdm_notebook(range(0,len(train)-n)):#range(0,len(train)-n)        
+    for i in tqdm.tqdm_notebook(range(0,len(train)-n)):#      
         x_trainadd=norm_data_xtrain.iloc[i:i+n]. values
         x_trainaddscalar=x_scaler.fit_transform(x_trainadd)
 
@@ -185,9 +178,9 @@ for k in range(0,len(stock_id)):
     y_test=np.array(y_test_tran).reshape(-1) 
     
     #timestep 10
-    n = 10
+    n = 50
     n_steps = n 
-    n_features = 4
+    n_features = 5
     model = keras.models.Sequential()
     model.add(Conv1D(filters=64, kernel_size=1, activation='relu', input_shape = (n_features,n_steps)))
     model.add(LSTM(20,activation='relu'))
@@ -206,7 +199,7 @@ for k in range(0,len(stock_id)):
                                                  monitor='val_mean_absolute_error', 
                                                  save_best_only=True, 
                                                  mode='min')
-    history = model.fit(x_train,y_train,batch_size=32,epochs=30)
+    history = model.fit(x_train,y_train,batch_size=32,epochs=2)
     
     #predict
     predictions = model.predict(x_test)
@@ -214,8 +207,7 @@ for k in range(0,len(stock_id)):
     predictions_orign = y_scaler.inverse_transform(predictions)
     
 
-    meanmae_error=np.mean(abs(predictions_orign- np.array(y_testc)))
-    
+    meanmae_error=np.mean(abs(predictions_orign- np.array(y_testc).reshape(-1,1)))
 
     stock_mae.append(meanmae_error) 
     stock.append(stock_id[k]) 
