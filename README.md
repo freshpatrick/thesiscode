@@ -1,6 +1,4 @@
 <<<<<<< HEAD
-"# thesiscode" 
-"# thesiscode" 
 =======
 # Stock Prediction via Deep Attention and Transformer Based Neural Network Combining Mixed Frequency Financial Data and Monthly Revenue
 
