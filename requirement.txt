@@ -16,6 +16,7 @@ pathos==0.3.2
 keras==2.10.0
 yfinance==0.1.62
 keras-self-attention==0.51.0
+scikit-learn==1.6.1
 
 
 
