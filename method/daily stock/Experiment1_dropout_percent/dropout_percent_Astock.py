@@ -131,8 +131,9 @@ for i in range(0,6):
 
 
     model.compile(keras.optimizers.Adam(0.001),
-                  loss=keras.losses.MeanSquaredError(),  
-                  metrics=[keras.metrics.MeanAbsoluteError()])
+                  loss=keras.losses.CategoricalCrossentropy(),  #loss=keras.losses.MeanSquaredError()
+                  metrics=[keras.metrics.CategoricalAccuracy()])
+
 
 
     model.summary()
