@@ -1,0 +1,17 @@
+AAPL   5    7
+
+TSLA   6    7
+
+MSFT   4    2
+
+IBM    8    2
+
+AAPL15 1    7
+
+TSLA15 2    5
+
+MSFT15 2    2
+
+IBM15  3    1
+
+StockQM 8   6
