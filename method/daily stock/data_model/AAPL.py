@@ -25,7 +25,11 @@ from sklearn.metrics import mean_absolute_error
 
 
 # Load  dataset
-df = yf.download("AAPL", start="1980-01-01", end="2024-07-31")
+output_directory = r'C:\Users\2507\Desktop\遠端資料\data\thesiscode-main\data\daily stock'
+output_path = os.path.join(output_directory, "AAPL.csv")   
+df=pd.read_csv(output_path)  
+df=df.iloc[:,1:]
+      
 data_orign = df.drop(['Adj Close', 'Volume'], axis=1)
 data=pd.concat([pd.DataFrame(df['Volume']),pd.DataFrame(data_orign)],axis=1)
 
@@ -133,8 +137,8 @@ model = build_model(
     ff_dim=4,
     num_transformer_encoderblocks=5, 
     num_transformer_decoderblocks=range(0,7),
-    mlp_dropout=0.2,
-    dropout=0.2,
+    mlp_dropout=0.25,
+    dropout=0.25,
 )
 
 
