@@ -25,7 +25,7 @@ from sklearn.metrics import mean_absolute_error
 
 
 # Load  dataset
-output_directory = r'C:\Users\2507\Desktop\遠端資料\data\thesiscode-main\data\daily stock'
+output_directory = r'../../../data/daily stock' 
 output_path = os.path.join(output_directory, "MSFT.csv")   
 df=pd.read_csv(output_path)  
 df=df.iloc[:,1:]
@@ -148,11 +148,10 @@ model.summary()
 
 
 #設定callback
-model_dir = r'C:\Users\2507\Desktop\遠端資料\save_best'
-
-log_dir = os.path.join(r'D:/2021 4月開始的找回程式之旅/lab2-logs', 'model10')
+model_dir = r'../../../checkpoint/'
+log_dir = os.path.join(r'../../../checkpoint', 'model')
 model_cbk = keras.callbacks.TensorBoard(log_dir=log_dir)
-model_mckp = keras.callbacks.ModelCheckpoint(model_dir + '/Best-model-1.h5', 
+model_mckp = keras.callbacks.ModelCheckpoint(model_dir + '/MSFT.h5', 
                                         monitor='val_mean_absolute_error', 
                                         save_best_only=True, 
                                         mode='min')

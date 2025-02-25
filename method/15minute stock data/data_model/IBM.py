@@ -25,8 +25,8 @@ from sklearn.metrics import mean_absolute_error
 
 
 # Load  dataset
-output_directory = r'C:\Users\2507\Desktop\遠端資料\data\15mindata\IBM '
-output_path = os.path.join(output_directory, "IBM15min.csv")   
+output_directory =  r'../../../data/15 minutes stock'
+output_path = os.path.join(output_directory, "IBM15min.csv")  
 df=pd.read_csv(output_path)  
 data=df.iloc[:,2:]
 
@@ -176,7 +176,7 @@ def scheduler(epoch, lr):
 
 history = model.fit(X_train, y_train, 
                batch_size=32,
-               epochs=30,
+               epochs=5,
                validation_data=(X_val, y_val),  
                callbacks=[model_cbk, model_mckp,keras.callbacks.LearningRateScheduler(scheduler)])
 
