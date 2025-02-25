@@ -24,10 +24,8 @@ from tensorflow.python.framework import ops
 from sklearn.metrics import mean_absolute_error
 
 #load data
-x_bigdata=np.load(r'C:\Users\2507\Desktop\遠端資料\data\x_bigdata.npy')
-y_bigdata=np.load(r'C:\Users\2507\Desktop\遠端資料\data\y_bigdata.npy')
-
-
+x_bigdata=np.load(r'../../../data/StockQM/x_bigdata.npy')
+y_bigdata=np.load(r'../../../data/StockQM/y_bigdata.npy')
 
 indexs=np.random.permutation(len(x_bigdata)) 
 train_indexs=indexs[:int(len(x_bigdata)*0.6)]
@@ -128,8 +126,8 @@ model = build_model(
     ff_dim=4,
     num_transformer_encoderblocks=8, 
     num_transformer_decoderblocks=range(0,6), 
-    mlp_dropout=0.2,
-    dropout=0.2,
+    mlp_dropout=0.25,
+    dropout=0.25,
 )
 
 
@@ -142,11 +140,10 @@ model.summary()
 
 
 #callback
-model_dir = r'C:\Users\2507\Desktop\遠端資料\save_best'
-
-log_dir = os.path.join(r'D:/2021 4月開始的找回程式之旅/lab2-logs', 'model10')
+model_dir = r'../../../checkpoint/'
+log_dir = os.path.join(r'../../../checkpoint', 'model')
 model_cbk = keras.callbacks.TensorBoard(log_dir=log_dir)
-model_mckp = keras.callbacks.ModelCheckpoint(model_dir + '/Best-model-1.h5', 
+model_mckp = keras.callbacks.ModelCheckpoint(model_dir + '/StockQM.h5', 
                                         monitor='val_mean_absolute_error', 
                                         save_best_only=True, 
                                         mode='min')
@@ -171,13 +168,10 @@ history = model.fit(x_train, y_train,
 history.history.keys() 
 
 
-
 y_pred = model.predict(x_test)
 y_pred = y_scaler.inverse_transform(y_pred)
 meanmae_error=np.mean(abs(y_pred- np.array(y_test_orign)))
 print(" 平均mae誤差: {:.2f}".format(meanmae_error))
-
-
 
 #plot loss
 plt.plot(history.history['loss'], label='train')

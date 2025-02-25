@@ -24,12 +24,13 @@ from tensorflow.python.framework import ops
 from sklearn.metrics import mean_absolute_error
 
 #load data
-x_train=np.load('C:/Users/2507/Desktop/遠端資料/data/Astockdata/Astockx_train.npy')
-x_val=np.load('C:/Users/2507/Desktop/遠端資料/data/Astockdata/Astockx_val.npy')
-x_test=np.load('C:/Users/2507/Desktop/遠端資料/data/Astockdata/Astockx_test.npy')
-y_train=np.load('C:/Users/2507/Desktop/遠端資料/data/Astockdata/Astocky_train.npy')
-y_val=np.load('C:/Users/2507/Desktop/遠端資料/data/Astockdata/Astocky_val.npy')
-y_test=np.load('C:/Users/2507/Desktop/遠端資料/data/Astockdata/Astocky_test.npy')
+x_train=np.load(r'../../../data/Astock/Astockx_train.npy')
+x_val=np.load(r'../../../data/Astock/Astockx_val.npy')
+x_test=np.load(r'../../../data/Astock/Astockx_test.npy')
+y_train=np.load(r'../../../data/Astock/Astocky_train.npy')
+y_val=np.load(r'../../../data/Astock/Astocky_val.npy')
+y_test=np.load(r'../../../data/Astock/Astocky_test.npy')
+
 
 y_test_orign=y_test
 y_scaler = MinMaxScaler(feature_range = (0, 1))
@@ -125,11 +126,10 @@ model.summary()
 
 
 #callback
-model_dir = r'C:\Users\2507\Desktop\遠端資料\save_best'
-
-log_dir = os.path.join(r'D:/2021 4月開始的找回程式之旅/lab2-logs', 'model10')
+model_dir = r'../../../checkpoint/'
+log_dir = os.path.join(r'../../../checkpoint', 'model')
 model_cbk = keras.callbacks.TensorBoard(log_dir=log_dir)
-model_mckp = keras.callbacks.ModelCheckpoint(model_dir + '/Best-model-1.h5', 
+model_mckp = keras.callbacks.ModelCheckpoint(model_dir + '/Astock.h5', 
                                         monitor='val_categorical_accuracy', 
                                         save_best_only=True, 
                                         mode='max')
