@@ -26,7 +26,7 @@ from sklearn.metrics import mean_absolute_error
 
 
 # Load  dataset
-output_directory = r'C:\Users\2507\Desktop\遠端資料\data\15mindata\MSFT'
+output_directory =  r'../../../data/15 minutes stock'
 output_path = os.path.join(output_directory, "MSFT15min.csv")   
 df=pd.read_csv(output_path)  
 data=df.iloc[:,2:]

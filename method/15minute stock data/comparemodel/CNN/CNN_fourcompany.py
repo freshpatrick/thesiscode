@@ -51,7 +51,7 @@ from keras.layers import Conv1D , MaxPool2D , Flatten , Dropout, GlobalAveragePo
 
 
 #載入資料
-AAPL=pd.read_csv( r'C:\Users\2507\Desktop\遠端資料\data\15mindata\AAPL\AAPL15min.csv')  
+AAPL=pd.read_csv( r'../../../../data/15 minutes stock/AAPL15min.csv')  
 AAPL=AAPL.iloc[:,2:]
 vol=AAPL['volume']
 close=AAPL['close']
@@ -59,7 +59,7 @@ close=AAPL['close']
 AAPL['close']=vol
 AAPL['volume']=close
 AAPL.columns=['open', 'high', 'low', 'volume', 'close']
-TSLA=pd.read_csv( r'C:\Users\2507\Desktop\遠端資料\data\15mindata\TSLA\TSLA15min.csv')  
+TSLA=pd.read_csv( r'../../../../data/15 minutes stock/TSLA15min.csv')  
 TSLA=TSLA.iloc[:,2:]
 vol=TSLA['volume']
 close=TSLA['close']
@@ -67,7 +67,7 @@ close=TSLA['close']
 TSLA['close']=vol
 TSLA['volume']=close
 TSLA.columns=['open', 'high', 'low', 'volume', 'close']
-MSFT=pd.read_csv( r'C:\Users\2507\Desktop\遠端資料\data\15mindata\MSFT\MSFT15min.csv')  
+MSFT=pd.read_csv( r'../../../../data/15 minutes stock/MSFT15min.csv')  
 MSFT=MSFT.iloc[:,2:]
 vol=MSFT['volume']
 close=MSFT['close']
@@ -75,7 +75,7 @@ close=MSFT['close']
 MSFT['close']=vol
 MSFT['volume']=close
 MSFT.columns=['open', 'high', 'low', 'volume', 'close']
-IBM=pd.read_csv( r'C:\Users\2507\Desktop\遠端資料\data\15mindata\IBM\IBM15min.csv')  
+IBM=pd.read_csv( r'../../../../data/15 minutes stock/IBM15min.csv')  
 IBM=IBM.iloc[:,2:]
 vol=IBM['volume']
 close=IBM['close']
@@ -214,6 +214,6 @@ for k in range(0,len(stock_id)):
 
 #output
 cnnlstm_data=pd.concat([pd.DataFrame(stock),pd.DataFrame(stock_mae)], axis=1)
-cnnlstm_data.to_csv(r'D:/2021 4月開始的找回程式之旅/0409論文想做的題目/0506比較方法/五個股票/MINMAXSCALAR CNN_LSTM1.csv', encoding='utf_8_sig')
+cnnlstm_data.to_csv('CNN_LSTM.csv', encoding='utf_8_sig')
 
 
