@@ -65,9 +65,9 @@ def build_model(
     #decoder
     for dim in num_transformer_decoderblocks:
         x_encoder=x
-        x = layers.Dense(10, activation="relu")(x)
+        x = layers.Dense(50, activation="relu")(x)
         x = layers.Dropout(mlp_dropout)(x)
-        x = layers.Dense(10, activation="relu")(x)
+        x = layers.Dense(50, activation="relu")(x)
         x = layers.Dropout(mlp_dropout)(x)
         x=x_encoder+x
     x=layers.Concatenate()([x_encoder1, x])

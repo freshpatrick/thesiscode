@@ -105,9 +105,7 @@ for i in range(6,7):  #len(stocklist)
 
        #model
        Stockmodel = AAPL_network.StockAAPLModel()      
-       #Stockmodel = AAPL_network.StockAAPLModel    
-       #Stockmodel.input_shape = X_train.shape[1:]       
-       #from AAPL_network import StockAAPLModel  # 確保匯入正確
+
        model=Stockmodel.callmodel()
        
        model.compile(keras.optimizers.Adam(0.001),
@@ -137,7 +135,7 @@ for i in range(6,7):  #len(stocklist)
                 callbacks=[model_cbk, model_mckp,keras.callbacks.LearningRateScheduler(scheduler)])
 
 
-       model.load_weights(model_dir + '/AAPL.h5')
+       #model.load_weights(model_dir + '/AAPL.h5')
        # Make predictions
        train_predict = model.predict(X_train)
        val_predict = model.predict(X_val)
@@ -220,7 +218,7 @@ for i in range(6,7):  #len(stocklist)
                 validation_data=(X_val, y_val),  
                 callbacks=[model_cbk, model_mckp,keras.callbacks.LearningRateScheduler(scheduler)])
 
-       model.load_weights(model_dir + '/MSFT1.h5')
+       #model.load_weights(model_dir + '/MSFT1.h5')
        # Make predictions
        train_predict = model.predict(X_train)
        val_predict = model.predict(X_val)
@@ -305,7 +303,7 @@ for i in range(6,7):  #len(stocklist)
 
 
        # Make predictions
-       model.load_weights(model_dir + '/TSLA1.h5')
+       model.load_weights(model_dir + '/TSLA.h5')
        train_predict = model.predict(X_train)
        val_predict = model.predict(X_val)
        test_predict = model.predict(X_test)
@@ -470,7 +468,7 @@ for i in range(6,7):  #len(stocklist)
 
 
        # Make predictions
-       model.load_weights(model_dir + '/AAPL15minute1.h5')
+       #model.load_weights(model_dir + '/AAPL15minute.h5')
        train_predict = model.predict(X_train)
        val_predict = model.predict(X_val)
        test_predict = model.predict(X_test)
@@ -552,7 +550,7 @@ for i in range(6,7):  #len(stocklist)
 
 
        # Make predictions
-       model.load_weights(model_dir + '/MSFT15minute1.h5')
+       #model.load_weights(model_dir + '/MSFT15minute.h5')
        train_predict = model.predict(X_train)
        val_predict = model.predict(X_val)
        test_predict = model.predict(X_test)
@@ -634,7 +632,7 @@ for i in range(6,7):  #len(stocklist)
 
 
        # Make predictions
-       model.load_weights(model_dir + '/TSLA15minute1.h5')
+       #model.load_weights(model_dir + '/TSLA15minute.h5')
        train_predict = model.predict(X_train)
        val_predict = model.predict(X_val)
        test_predict = model.predict(X_test)
@@ -721,6 +719,7 @@ for i in range(6,7):  #len(stocklist)
        test_predict = model.predict(X_test)
 
        # Inverse transform predictions
+       #model.load_weights(model_dir + '/IBM15minute.h5')
        train_predict = y_scaler.inverse_transform(train_predict)
        val_predict = y_scaler.inverse_transform(val_predict)
        test_predict = y_scaler.inverse_transform(test_predict)
@@ -803,7 +802,7 @@ for i in range(6,7):  #len(stocklist)
       history.history.keys() 
 
 
-
+      #model.load_weights(model_dir + '/StockQM.h5')
       y_pred = model.predict(x_test)
       y_pred = y_scaler.inverse_transform(y_pred)
       meanmae_error=np.mean(abs(y_pred- np.array(y_test_orign)))
@@ -863,7 +862,7 @@ for i in range(6,7):  #len(stocklist)
       history.history.keys() 
 
 
-
+      #model.load_weights(model_dir + '/Astock.h5')
       y_pred = model.predict(x_test)
 
 
