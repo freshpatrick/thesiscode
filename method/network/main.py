@@ -218,7 +218,7 @@ for i in range(6,7):  #len(stocklist)
                 validation_data=(X_val, y_val),  
                 callbacks=[model_cbk, model_mckp,keras.callbacks.LearningRateScheduler(scheduler)])
 
-       #model.load_weights(model_dir + '/MSFT1.h5')
+       #model.load_weights(model_dir + '/MSFT.h5')
        # Make predictions
        train_predict = model.predict(X_train)
        val_predict = model.predict(X_val)
